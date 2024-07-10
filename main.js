@@ -7,21 +7,29 @@ let port = ":8000";
 form.addEventListener("submit", createVacation);
 getVacations();
 
-function createVacation(event){
+function createVacation(event) {
     event.preventDefault();
     const form = event.target;
     const formData = {};
-    for (let field of form.elements){
-        if(field.name){
-            formData[field.name] = field.value;
+    formData['photos'] = [];
+    for (let field of form.elements) {
+        if (field.name) {
+            if (field.name == "Photo1") {
+                formData["photos"][0] = field.value;
+            }
+            else if (field.name == "Photo2") {
+                formData["photos"][1] = field.value;
+            } else {
+                formData[field.name] = field.value;
+            }
         }
     }
     fetch(`${baseUrl}${port}/createVacation`, {
         method: "POST",
         body: JSON.stringify(formData)
     })
-        .then(response =>{
-            if(response.ok){
+        .then(response => {
+            if (response.ok) {
                 showAlert("sukurtas");
                 form.reset();
                 getVacations();
@@ -29,46 +37,48 @@ function createVacation(event){
         })
 }
 
-function getVacations(){
+function getVacations() {
     fetch(`${baseUrl}${port}/getVacations`)
         .then(response => response.json())
-        .then(data  => {
+        .then(data => {
             fillTable(data);
         })
 }
 
-function fillTable(data){
-    
+function fillTable(data) {
     let tbody = document.querySelector("#tbody");
     let HTML = "";
     let counter = 1;
-    data.forEach(user =>{
+    data.forEach(vacation => {
+        /*
+        A serial number which increments for each user.
+        The user's first name
+        */
         HTML += `<tr>
-                    <td>${counter++}</td>//A serial number which increments for each user.
-                    <td>${vacation.title}</td>//The user's first name
+                    <td>${counter++}</td>
+                    <td>${vacation.title}</td>
                     <td>${vacation.country}</td>
                     <td>${vacation.city}</td>
                     <td>${vacation.season}</td>
                     <td>${vacation.photos}</td>
                     <td>${vacation.price}</td>
                     <td>${vacation.description}</td>
-                    <td><img src="${user.avatar}" alt="Avatar" class="img-thumbnail"></td>
                     <td>
-                        <a href="" userId="${user.id}"class="btn btn-sm btn-primary update"><i class="fas fa-edit"></i> Edit</a>
-                        <a href="" userId="${user.id}" class="btn btn-sm btn-danger delete"><i class="fas fa-trash-alt"></i> Delete</a>
+                        <a href="" vacationId="${vacation.id}"class="btn btn-sm btn-primary update"><i class="fas fa-edit"></i> Edit</a>
+                        <a href="" vacationId="${vacation.id}" class="btn btn-sm btn-danger delete"><i class="fas fa-trash-alt"></i> Delete</a>
                     </td>
                 </tr>`;
     }
-);
+    );
     tbody.innerHTML = HTML;
     addEventListenersOnDelete();
     addEventListenersOnUpdate();
 }
 
-function addEventListenersOnUpdate(){
+function addEventListenersOnUpdate() {
     let updateBnts = document.querySelectorAll(".update");
     updateBnts.forEach(btn => {
-        btn.addEventListener("click", function (event){
+        btn.addEventListener("click", function (event) {
             event.preventDefault();
             editVacation(btn.getAttribute("vacationId"));
             window.scrollTo(0, 0);
@@ -76,63 +86,63 @@ function addEventListenersOnUpdate(){
     });
 }
 
-function addEventListenersOnDelete(){
+function addEventListenersOnDelete() {
     let deleteBnts = document.querySelectorAll(".delete");
     deleteBnts.forEach(btn => {
         btn.addEventListener("click", function (event) {
             event.preventDefault();
             deleteVacation(btn.getAttribute("vacationId"));
+            showAlert("Ištrintas");
             window.scrollTo(0, 0);
         })
     });
 }
 
-function deleteVacation(vacationId){
-    event.preventDefault();
-    const formData = {"id" : vacationId };
+function deleteVacation(vacationId) {
+    console.log(vacationId);
+    const formData = { "id": vacationId };
     fetch(`${baseUrl}${port}/deleteVacation`, {
         method: "POST",
         body: JSON.stringify(formData)
     })
         .then(response => {
-            if(response.ok){
-                showAlert("Ištrintas");
+            if (response.ok) {
                 getVacations();
+                showAlert("Ištrintas");
             }
         })
-    window.scrollTo(0, 0);
 }
 
-function editVacation(id){
-    toggleForm(true);
+function editVacation(id) {
+    toggleForm(true,id);
     getVacation(id);
 }
 
-function getVacation(id){
+function getVacation(id) {
     fetch(`${baseUrl}${port}/getVacation?id=${id}`)
         .then(response => response.json())
         .then(data => {
+            console.log(data);
             fillForm(data);
         })
 }
 
-function fillForm(vacation){
-    document.querySelector("#id").value = vacation.id;
+function fillForm(vacation) {
+    document.querySelector("#userId").value = vacation.id;
     document.querySelector("#title").value = vacation.title;
     document.querySelector("#country").value = vacation.country;
     document.querySelector("#city").value = vacation.city;
     document.querySelector("#season").value = vacation.season;
-    document.querySelector("#photos").value = vacation.photos;
+    // document.querySelector("#photos").value = vacation.photos;
     document.querySelector("#price").value = vacation.price;
     document.querySelector("#description").value = vacation.description;
-    document.querySelector("#rating").value = vacation.rating;
 }
 
-function updateUser(event) {
+function updateVacation(event) {
     event.preventDefault();
     const form = event.target;
     const formData = {};
-    for (let field of form.elements){
+    for (let field of form.elements) {
         if (field.name) {
             formData[field.name] = field.value;
         }
@@ -141,32 +151,38 @@ function updateUser(event) {
         method: "POST",
         body: JSON.stringify(formData)
     })
-    .then(response => {
-        if(response.ok){
-            showAlert("atnaujintas");
-            form.reset();
-            getVacations();
-            toggleForm(false);
-        }
-    })
+        .then(response => {
+            if (response.ok) {
+                showAlert("atnaujintas");
+                form.reset();
+                getVacations();
+                toggleForm(false);
+            }
+        })
 }
 
-function toggleForm(state){
+function toggleForm(state,id) {
     formBtn.classList.toggle("btn-success");
     formBtn.classList.toggle("btn-primary");
-    document.querySelector("id").value = "";
-    if(state){
+    // document.querySelector("#createVacationForm").value = "edit";
+    if (state) {
         formBtn.innerText = "Atnaujinti";
         form.removeEventListener("submit", createVacation);
         form.addEventListener("submit", updateVacation);
-    }else{
+        form.innerHTML += `<input type="hidden" id="userId" name="id">`;
+
+    } else {
         formBtn.innerText = "Įrašyti";
         form.removeEventListener("submit", updateVacation);
         form.addEventListener("submit", createVacation);
+        
+        try{
+            document.querySelector("#userId").remove();
+            }catch(e){}
     }
 }
 
-function showAlert(status){
+function showAlert(status) {
     alertsContainer.innerHTML = `
     <div class="alert alert-success">
             <strong>Success!</strong> Kelionė sėkmingai ${status}.
