@@ -38,15 +38,20 @@ function getVacations(){
 }
 
 function fillTable(data){
+    
     let tbody = document.querySelector("#tbody");
     let HTML = "";
     let counter = 1;
     data.forEach(user =>{
         HTML += `<tr>
-                    <td>${counter++}</td>
-                    <td>${user.firstName}</td>
-                    <td>${user.lastName}</td>
-                    <td>${user.email}</td>
+                    <td>${counter++}</td>//A serial number which increments for each user.
+                    <td>${vacation.title}</td>//The user's first name
+                    <td>${vacation.country}</td>
+                    <td>${vacation.city}</td>
+                    <td>${vacation.season}</td>
+                    <td>${vacation.photos}</td>
+                    <td>${vacation.price}</td>
+                    <td>${vacation.description}</td>
                     <td><img src="${user.avatar}" alt="Avatar" class="img-thumbnail"></td>
                     <td>
                         <a href="" userId="${user.id}"class="btn btn-sm btn-primary update"><i class="fas fa-edit"></i> Edit</a>
@@ -167,6 +172,6 @@ function showAlert(status){
             <strong>Success!</strong> Kelionė sėkmingai ${status}.
         </div>`;
     setTimeout(() => {
-        alertsContainer.innerHTML = '';//clear the alert message
+        alertsContainer.innerHTML = '';
     }, 3000);
 }
