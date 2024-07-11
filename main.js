@@ -14,10 +14,10 @@ function createVacation(event) {
     formData['photos'] = [];
     for (let field of form.elements) {
         if (field.name) {
-            if (field.name == "Photo1") {
+            if (field.name == "photo1") {
                 formData["photos"][0] = field.value;
             }
-            else if (field.name == "Photo2") {
+            else if (field.name == "photo2") {
                 formData["photos"][1] = field.value;
             } else {
                 formData[field.name] = field.value;
@@ -142,21 +142,29 @@ function updateVacation(event) {
     event.preventDefault();
     const form = event.target;
     const formData = {};
+    formData['photos'] = [];
     for (let field of form.elements) {
         if (field.name) {
-            formData[field.name] = field.value;
+            if (field.name == "photo1") {
+                formData["photos"][0] = field.value;
+            }
+            else if (field.name == "photo2") {
+                formData["photos"][1] = field.value;
+            } else {
+                formData[field.name] = field.value;
+            }
         }
     }
+    console.log(formData);
     fetch(`${baseUrl}${port}/updateVacation`, {
         method: "POST",
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
     })
         .then(response => {
             if (response.ok) {
-                showAlert("atnaujintas");
+                showAlert("sukurtas");
                 form.reset();
                 getVacations();
-                toggleForm(false);
             }
         })
 }
