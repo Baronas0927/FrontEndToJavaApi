@@ -9,6 +9,9 @@ getVacations();
 
 function createVacation(event) {
     event.preventDefault();
+    if(document.querySelector("#price").value == ""){
+        return;
+    }
     const form = event.target;
     const formData = {};
     formData['photos'] = [];
@@ -37,10 +40,42 @@ function createVacation(event) {
         })
 }
 
+function updateVacation(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = {};
+    formData['photos'] = [];
+    for (let field of form.elements) {
+        if (field.name) {
+            if (field.name == "photo1") {
+                formData["photos"][0] = field.value;
+            }
+            else if (field.name == "photo2") {
+                formData["photos"][1] = field.value;
+            } else {
+                formData[field.name] = field.value;
+            }
+        }
+    }
+    console.log(formData);
+    fetch(`${baseUrl}${port}/updateVacation`, {
+        method: "POST",
+        body: JSON.stringify(formData),
+    })
+        .then(response => {
+            if (response.ok) {
+                showAlert("atnaujintas");
+                form.reset();
+                getVacations();
+            }
+        })
+}
+
 function getVacations() {
     fetch(`${baseUrl}${port}/getVacations`)
         .then(response => response.json())
         .then(data => {
+            console.log(data);
             fillTable(data);
         })
 }
@@ -50,6 +85,7 @@ function fillTable(data) {
     let HTML = "";
     let counter = 1;
     data.forEach(vacation => {
+        console.log(vacation);
         /*
         A serial number which increments for each user.
         The user's first name
@@ -63,6 +99,7 @@ function fillTable(data) {
                     <td>${vacation.photos}</td>
                     <td>${vacation.price}</td>
                     <td>${vacation.description}</td>
+                    <td>${vacation.ratings}</td>
                     <td>
                         <a href="" vacationId="${vacation.id}"class="btn btn-sm btn-primary update"><i class="fas fa-edit"></i> Edit</a>
                         <a href="" vacationId="${vacation.id}" class="btn btn-sm btn-danger delete"><i class="fas fa-trash-alt"></i> Delete</a>
@@ -81,6 +118,7 @@ function addEventListenersOnUpdate() {
         btn.addEventListener("click", function (event) {
             event.preventDefault();
             editVacation(btn.getAttribute("vacationId"));
+            showAlert("Atnaujintas");
             window.scrollTo(0, 0);
         })
     });
@@ -133,51 +171,28 @@ function fillForm(vacation) {
     document.querySelector("#country").value = vacation.country;
     document.querySelector("#city").value = vacation.city;
     document.querySelector("#season").value = vacation.season;
-    // document.querySelector("#photos").value = vacation.photos;
+    document.querySelector("#photos1").value = vacation.photos;//prirasiau cia
+    document.querySelector("#photos2").value = vacation.photos;
     document.querySelector("#price").value = vacation.price;
     document.querySelector("#description").value = vacation.description;
 }
 
-function updateVacation(event) {
-    event.preventDefault();
-    const form = event.target;
-    const formData = {};
-    formData['photos'] = [];
-    for (let field of form.elements) {
-        if (field.name) {
-            if (field.name == "photo1") {
-                formData["photos"][0] = field.value;
-            }
-            else if (field.name == "photo2") {
-                formData["photos"][1] = field.value;
-            } else {
-                formData[field.name] = field.value;
-            }
-        }
-    }
-    console.log(formData);
-    fetch(`${baseUrl}${port}/updateVacation`, {
-        method: "POST",
-        body: JSON.stringify(formData),
-    })
-        .then(response => {
-            if (response.ok) {
-                showAlert("sukurtas");
-                form.reset();
-                getVacations();
-            }
-        })
-}
+
 
 function toggleForm(state,id) {
+    if (id ==null, title==null, country==null, city==null, season==null, photos==null, price==null, description==null) {
+        formBtn.removeAttribute
+
+    }
     formBtn.classList.toggle("btn-success");
     formBtn.classList.toggle("btn-primary");
     // document.querySelector("#createVacationForm").value = "edit";
+    
     if (state) {
         formBtn.innerText = "Atnaujinti";
         form.removeEventListener("submit", createVacation);
         form.addEventListener("submit", updateVacation);
-        form.innerHTML += `<input type="hidden" id="userId" name="id">`;
+        form.innerHTML += `<input type="hidden" id="userId" name="id" value="${id}">`;
 
     } else {
         formBtn.innerText = "Įrašyti";
